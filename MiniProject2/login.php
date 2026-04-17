@@ -6,18 +6,20 @@ if (isset($_POST['login'])) {
     $user = $_POST['username'];
     $pass = $_POST['password'];
 
-    $stmt = $conn->prepare("SELECT id, password, role FROM users WHERE username = ?");
-    $stmt->bind_param("s", $user);
+    // Kita check username dan password terus dari database secara plain text
+    $stmt = $conn->prepare("SELECT id, password, role FROM users WHERE username = ? AND password = ?");
+    $stmt->bind_param("ss", $user, $pass);
     $stmt->execute();
     $result = $stmt->get_result();
 
     if ($row = $result->fetch_assoc()) {
-        if (password_verify($pass, $row['password'])) {
-            $_SESSION['user_id'] = $row['id'];
-            $_SESSION['role'] = $row['role'];
-            header("Location: dashboard.php");
-        } else { $error = "Invalid Password!"; }
-    } else { $error = "User not found!"; }
+        $_SESSION['user_id'] = $row['id'];
+        $_SESSION['role'] = $row['role'];
+        header("Location: dashboard.php");
+        exit();
+    } else {
+        $error = "Invalid Username or Password!";
+    }
 }
 ?>
 <!DOCTYPE html>
